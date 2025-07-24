@@ -1,0 +1,16 @@
+[project]
+name = "gefter-api"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "alembic>=1.16.4",
+    "fastapi-injector>=0.8.0",
+    "fastapi[standard]>=0.116.1",
+    "init-data-py>=0.2.6",
+    "psycopg2>=2.9.10",
+    "pydantic-settings>=2.10.1",
+    "sqlmodel>=0.0.24",
+    "uvicorn[standard]>=0.35.0",
+]

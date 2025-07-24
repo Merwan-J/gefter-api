@@ -1,9 +1,18 @@
-
-
-from bson import ObjectId
-from pydantic import BaseModel, Field
+import uuid
 from typing import Optional
-from api.utils.py_object_id import PyObjectId
+from pydantic import BaseModel
+from sqlmodel import Field
+from api.core.models import BaseModel as DBBaseModel
+
+
+class User(DBBaseModel, table=True):
+    __tablename__ = "users"
+
+    telegram_user_id: int = Field(unique=True)
+    username: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    photo_url: Optional[str] = None
 
 
 class UserBase(BaseModel):
@@ -14,32 +23,9 @@ class UserBase(BaseModel):
     photo_url: Optional[str] = None
 
 
-# Database Model
-class User(UserBase):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-
-    model_config = {
-        "json_encoders": {ObjectId: str},
-        "populate_by_name": True,
-        "arbitrary_types_allowed": True,
-        "exclude_none": True,
-    }
-
-# API Models
-
 class UserRead(UserBase):
-    id: str
+    id: uuid.UUID
 
-    @classmethod
-    def from_db_model(cls, user: User) -> "UserRead":
-        return cls(
-            id=str(user.id),
-            telegram_user_id=user.telegram_user_id,
-            username=user.username,
-            first_name=user.first_name,
-            last_name=user.last_name,
-            photo_url=user.photo_url
-        )
 
 class UserCreate(UserBase):
     pass
