@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import APIRouter, Depends
 from fastapi_injector import Injected
 from api.user.models import User, UserRead, UserCreate
@@ -14,6 +15,15 @@ async def register_user(
 ):
     user = user_service.create_user(user)
     return UserRead(**user.model_dump())
+
+
+@user_router.get('/', response_model=List[UserRead])
+async def get_users(
+    user_service: UserService = Injected(UserService),
+    _: User = Depends(get_current_user),
+):
+    users = user_service.get_all_users()
+    return [UserRead(**user.model_dump()) for user in users]
 
 
 @user_router.get("/me", response_model=UserRead)
