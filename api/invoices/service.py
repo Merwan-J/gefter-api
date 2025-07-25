@@ -11,9 +11,9 @@ from api.invoices.repository import InvoiceRepository
 class InvoiceService:
     invoice_repository: InvoiceRepository
 
-    def create_invoice(self, invoice_create: InvoiceCreate) -> Invoice:  
+    def create_invoice(self, invoice_create: InvoiceCreate) -> Invoice:
         try:
             invoice = self.invoice_repository.create_invoice_with_shares(invoice_create)
             return invoice
-        except Exception as e:
+        except Exception:
             raise HTTPException(status_code=500, detail="Unable to create invoice")

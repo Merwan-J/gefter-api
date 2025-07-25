@@ -13,7 +13,8 @@ from api.invoice_shares.models import InvoiceShare, InvoiceShareCreate, InvoiceS
 class InvoiceType(str, Enum):
     INDIVIDUAL = "INDIVIDUAL"
     GROUP = "GROUP"
-    
+
+
 class InvoiceStatus(str, Enum):
     PENDING = "PENDING"
     PARTIALLY_PAID = "PARTIALLY_PAID"
@@ -26,13 +27,12 @@ class Invoice(DBBaseModel, table=True):
 
     creator_id: UUID
     amount: Decimal = Field(sa_type=Decimal(10, 2), gt=0)
-    title: str = Field(max_length=30) 
+    title: str = Field(max_length=30)
     description: Optional[str] = Field(max_length=255)
-    type: InvoiceType 
+    type: InvoiceType
     status: InvoiceStatus = Field(default=InvoiceStatus.PENDING)
-    
-    invoice_shares: List[InvoiceShare] = Relationship(back_populates="invoice")
 
+    invoice_shares: List[InvoiceShare] = Relationship(back_populates="invoice")
 
 
 class InvoiceBase(BaseModel):
@@ -44,7 +44,6 @@ class InvoiceBase(BaseModel):
     status: InvoiceStatus = InvoiceStatus.PENDING
 
 
-
 class InvoiceCreate(InvoiceBase):
     invoice_shares: List[InvoiceShareCreate] = Field(min_items=1)
 
@@ -54,5 +53,3 @@ class InvoiceRead(InvoiceBase):
     invoice_shares: List[InvoiceShareRead] = Field(min_items=1)
     created_at: datetime.datetime
     updated_at: datetime.datetime
-
-

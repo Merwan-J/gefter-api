@@ -1,4 +1,4 @@
-from fastapi import HTTPException, Request, Depends
+from fastapi import HTTPException, Request
 from fastapi_injector import Injected
 from api.user.models import User
 from api.user.service import UserService
@@ -6,9 +6,9 @@ from init_data_py import InitData
 from config import get_config
 
 
-
-
-def get_current_user(request: Request, user_service: UserService = Injected(UserService)) -> User:
+def get_current_user(
+    request: Request, user_service: UserService = Injected(UserService)
+) -> User:
     config = get_config()
     auth_header = request.headers.get("Authorization")
     if not auth_header:

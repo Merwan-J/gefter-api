@@ -11,7 +11,9 @@ invoice_router = APIRouter(prefix="/invoices", tags=["invoices"])
 
 @invoice_router.post("/")
 async def create_invoice(
-    invoice: InvoiceCreate, invoice_service: InvoiceService = Injected(InvoiceService), _: User = Depends(get_current_user)
+    invoice: InvoiceCreate,
+    invoice_service: InvoiceService = Injected(InvoiceService),
+    _: User = Depends(get_current_user),
 ):
     invoice = invoice_service.create_invoice(invoice)
     return InvoiceRead(**invoice.model_dump())
@@ -21,6 +23,6 @@ async def create_invoice(
 async def get_invoice(
     id: str,
     invoice_service: InvoiceService = Injected(InvoiceService),
-    _: User = Depends(get_current_user)
+    _: User = Depends(get_current_user),
 ):
     pass

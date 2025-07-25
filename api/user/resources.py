@@ -17,7 +17,7 @@ async def register_user(
     return UserRead(**user.model_dump())
 
 
-@user_router.get('/', response_model=List[UserRead])
+@user_router.get("/", response_model=List[UserRead])
 async def get_users(
     user_service: UserService = Injected(UserService),
     _: User = Depends(get_current_user),

@@ -23,7 +23,7 @@ class DatabaseEngineProvider:
     def get_engine(self) -> Engine:
         return self.engine
 
- 
+
 ModelType = TypeVar(name="ModelType", bound=DBBaseModel)
 
 

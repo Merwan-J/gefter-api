@@ -3,7 +3,7 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
 from sqlmodel import SQLModel
-import api.user.models
+import api.user.models  # noqa: F401
 from config import get_config
 
 config = context.config
@@ -14,6 +14,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 target_metadata = SQLModel.metadata
+
 
 def run_migrations_offline() -> None:
     url = config.get_main_option("sqlalchemy.url")

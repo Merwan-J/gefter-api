@@ -6,7 +6,7 @@ from api.invoice_shares.models import InvoiceShare
 
 
 @inject
-@dataclass 
+@dataclass
 class InvoiceShareRepository:
     engine_provider: DatabaseEngineProvider
 
