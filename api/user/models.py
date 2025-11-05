@@ -1,8 +1,14 @@
+from typing_extensions import List
 import uuid
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 from pydantic import BaseModel
-from sqlmodel import Field
+from sqlmodel import Field, Relationship
 from api.core.models import BaseModel as DBBaseModel
+
+
+if TYPE_CHECKING:
+    from api.invoices.models import Invoice
+    from api.invoice_shares.models import InvoiceShare
 
 
 class User(DBBaseModel, table=True):
@@ -14,6 +20,15 @@ class User(DBBaseModel, table=True):
     last_name: Optional[str] = None
     photo_url: Optional[str] = None
 
+    invoices: List["Invoice"] = Relationship(back_populates="creator")
+    invoice_shares: List["InvoiceShare"] = Relationship(
+        back_populates="debtor",
+        sa_relationship_kwargs={
+            "foreign_keys": "[InvoiceShare.debtor_id]",
+            "primaryjoin": "User.id == InvoiceShare.debtor_id"
+        }
+    )
+
 
 class UserBase(BaseModel):
     telegram_user_id: int
@@ -24,6 +39,8 @@ class UserBase(BaseModel):
 
 
 class UserRead(UserBase):
+    model_config = {"from_attributes": True}
+    
     id: uuid.UUID
 
 

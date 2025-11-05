@@ -1,6 +1,7 @@
 from typing import List
 from uuid import UUID
 from injector import inject
+from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, select
 from api.core.repository import DatabaseEngineProvider
 from .models import User
@@ -32,10 +33,13 @@ class UserRepository:
         with Session(self.engine) as session:
             return session.get(User, id)
 
-    def find_user_by_telegram_id(self, telegram_user_id: int) -> User:
+    def find_user_by_telegram_id(self, telegram_user_id: int) -> User | None:
         with Session(self.engine) as session:
-            query = select(User).where(User.telegram_user_id == telegram_user_id)
-            return session.exec(query).one()
+            try:
+                query = select(User).where(User.telegram_user_id == telegram_user_id)
+                return session.exec(query).one()
+            except NoResultFound:
+                return None
 
     def find_user_by_username(self, username: str) -> User:
         with Session(self.engine) as session:

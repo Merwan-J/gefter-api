@@ -1,7 +1,11 @@
 from fastapi import APIRouter, Depends
 from fastapi_injector import Injected
 from api.core.dependencies import get_current_user
-from api.invoices.models import InvoiceCreate, InvoiceRead
+from api.invoices.models import (
+    InvoiceCreate,
+    InvoiceDetailRead,
+    InvoiceRead,
+)
 from api.invoices.service import InvoiceService
 from api.user.models import User
 
@@ -15,14 +19,22 @@ async def create_invoice(
     invoice_service: InvoiceService = Injected(InvoiceService),
     _: User = Depends(get_current_user),
 ):
-    invoice = invoice_service.create_invoice(invoice)
-    return InvoiceRead(**invoice.model_dump())
+    created_invoice = invoice_service.create_invoice(invoice)
+    return InvoiceRead.model_validate(created_invoice)
 
 
-@invoice_router.get("/{id}", response_model=InvoiceRead)
+@invoice_router.get("/")
+async def get_invoices(
+    invoice_service: InvoiceService = Injected(InvoiceService),
+    user: User = Depends(get_current_user),
+):
+    return invoice_service.get_invoices(user.id)
+
+
+@invoice_router.get("/{id}", response_model=InvoiceDetailRead)
 async def get_invoice(
     id: str,
     invoice_service: InvoiceService = Injected(InvoiceService),
-    _: User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
 ):
-    pass
+    return invoice_service.get_invoice_detail(id, user.id)
