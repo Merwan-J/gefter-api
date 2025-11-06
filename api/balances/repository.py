@@ -25,10 +25,19 @@ class BalanceRepository:
             query = select(Balance).where(Balance.user_id == user_id)
             return session.exec(query).first()
 
-    def create_balance(self, user_id: UUID, initial_balance: Decimal = Decimal("0.00")) -> Balance:
+    def create_balance(
+        self,
+        user_id: UUID,
+        initial_owed_to_user: Decimal = Decimal("0.00"),
+        initial_user_owes: Decimal = Decimal("0.00"),
+    ) -> Balance:
         """Create a new balance record for a user"""
         with Session(self.engine) as session:
-            balance = Balance(user_id=user_id, balance=initial_balance)
+            balance = Balance(
+                user_id=user_id,
+                owed_to_user=initial_owed_to_user,
+                user_owes=initial_user_owes,
+            )
             session.add(balance)
             session.commit()
             session.refresh(balance)
@@ -41,36 +50,52 @@ class BalanceRepository:
             balance = self.create_balance(user_id)
         return balance
 
-    def update_balance(self, user_id: UUID, amount: Decimal) -> Balance:
-        """Add amount to user's balance (can be negative to subtract)"""
+    def add_to_owed_to_user(self, user_id: UUID, amount: Decimal) -> Balance:
+        """Increase amount others owe to this user."""
         with Session(self.engine) as session:
             query = select(Balance).where(Balance.user_id == user_id)
             balance = session.exec(query).first()
-            
             if balance is None:
-                balance = Balance(user_id=user_id, balance=Decimal("0.00"))
+                balance = Balance(user_id=user_id, owed_to_user=Decimal("0.00"), user_owes=Decimal("0.00"))
                 session.add(balance)
                 session.flush()
-            
-            balance.balance += amount
+            balance.owed_to_user += amount
             session.add(balance)
             session.commit()
             session.refresh(balance)
             return balance
 
-    def set_balance(self, user_id: UUID, balance: Decimal) -> Balance:
-        """Set user's balance to a specific value"""
+    def add_to_user_owes(self, user_id: UUID, amount: Decimal) -> Balance:
+        """Increase amount this user owes to others."""
+        with Session(self.engine) as session:
+            query = select(Balance).where(Balance.user_id == user_id)
+            balance = session.exec(query).first()
+            if balance is None:
+                balance = Balance(user_id=user_id, owed_to_user=Decimal("0.00"), user_owes=Decimal("0.00"))
+                session.add(balance)
+                session.flush()
+            balance.user_owes += amount
+            session.add(balance)
+            session.commit()
+            session.refresh(balance)
+            return balance
+
+    def set_balances(
+        self, user_id: UUID, owed_to_user: Decimal, user_owes: Decimal
+    ) -> Balance:
+        """Set both balance sides for a user."""
         with Session(self.engine) as session:
             query = select(Balance).where(Balance.user_id == user_id)
             balance_obj = session.exec(query).first()
-            
             if balance_obj is None:
-                balance_obj = Balance(user_id=user_id, balance=balance)
+                balance_obj = Balance(
+                    user_id=user_id, owed_to_user=owed_to_user, user_owes=user_owes
+                )
                 session.add(balance_obj)
             else:
-                balance_obj.balance = balance
+                balance_obj.owed_to_user = owed_to_user
+                balance_obj.user_owes = user_owes
                 session.add(balance_obj)
-            
             session.commit()
             session.refresh(balance_obj)
             return balance_obj

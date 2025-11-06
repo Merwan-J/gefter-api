@@ -13,7 +13,11 @@ class Balance(DBBaseModel, table=True):
     __tablename__ = "balances"
 
     user_id: UUID = Field(foreign_key="users.id", unique=True, index=True)
-    balance: Decimal = Field(
+    owed_to_user: Decimal = Field(
+        sa_type=Numeric[Decimal](precision=10, scale=2),
+        default=Decimal("0.00")
+    )
+    user_owes: Decimal = Field(
         sa_type=Numeric[Decimal](precision=10, scale=2),
         default=Decimal("0.00")
     )
@@ -21,7 +25,8 @@ class Balance(DBBaseModel, table=True):
 
 class BalanceBase(BaseModel):
     user_id: UUID
-    balance: Decimal
+    owed_to_user: Decimal
+    user_owes: Decimal
 
 
 class BalanceRead(BalanceBase):
@@ -33,5 +38,6 @@ class BalanceRead(BalanceBase):
 
 
 class BalanceUpdate(BaseModel):
-    balance: Decimal
+    owed_to_user: Decimal
+    user_owes: Decimal
 

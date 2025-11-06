@@ -22,20 +22,21 @@ class BalanceService:
         except Exception as e:
             raise InternalServerError(f"Unable to fetch balance: {str(e)}")
 
-    def update_balance(self, user_id: UUID, amount: Decimal) -> Balance:
-        """Update user's balance by adding amount (can be negative)"""
+    def add_to_owed_to_user(self, user_id: UUID, amount: Decimal) -> Balance:
+        """Increase amount others owe to this user."""
         try:
-            return self.balance_repository.update_balance(user_id, amount)
+            return self.balance_repository.add_to_owed_to_user(user_id, amount)
         except BaseAPIException:
             raise
         except Exception as e:
-            raise InternalServerError(f"Unable to update balance: {str(e)}")
+            raise InternalServerError(f"Unable to update owed_to_user: {str(e)}")
 
-    def add_to_balance(self, user_id: UUID, amount: Decimal) -> Balance:
-        """Add amount to user's balance"""
-        return self.update_balance(user_id, amount)
-
-    def subtract_from_balance(self, user_id: UUID, amount: Decimal) -> Balance:
-        """Subtract amount from user's balance"""
-        return self.update_balance(user_id, -amount)
+    def add_to_user_owes(self, user_id: UUID, amount: Decimal) -> Balance:
+        """Increase amount this user owes to others."""
+        try:
+            return self.balance_repository.add_to_user_owes(user_id, amount)
+        except BaseAPIException:
+            raise
+        except Exception as e:
+            raise InternalServerError(f"Unable to update user_owes: {str(e)}")
 

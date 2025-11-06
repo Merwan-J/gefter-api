@@ -29,7 +29,8 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.Column("user_id", sa.Uuid(), nullable=False),
-        sa.Column("balance", sa.Numeric(precision=10, scale=2), nullable=False),
+        sa.Column("owed_to_user", sa.Numeric(precision=10, scale=2), nullable=False, server_default="0"),
+        sa.Column("user_owes", sa.Numeric(precision=10, scale=2), nullable=False, server_default="0"),
         sa.ForeignKeyConstraint(
             ["user_id"],
             ["users.id"],

@@ -41,13 +41,10 @@ class InvoiceService:
                 invoice = self.invoice_repository.create_invoice_with_shares(invoice_create)
                 
                 # Update balances based on invoice shares
-                # Creator's balance increases by amounts owed to them (as creditor)
-                # Debtors' balances decrease by amounts they owe
+                # For each share: increase creator's owed_to_user, and increase debtor's user_owes
                 for share in invoice.invoice_shares:
-                    # Add to creditor's balance (they are owed money)
-                    self.balance_service.add_to_balance(share.creditor_id, share.amount)
-                    # Subtract from debtor's balance (they owe money)
-                    self.balance_service.subtract_from_balance(share.debtor_id, share.amount)
+                    self.balance_service.add_to_owed_to_user(share.creditor_id, share.amount)
+                    self.balance_service.add_to_user_owes(share.debtor_id, share.amount)
                 
             except Exception as e:
                 print(f"Unable to create invoice: {e}")
