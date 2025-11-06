@@ -16,12 +16,14 @@ from api.invoices.models import (
     InvoiceRead,
 )
 from api.invoices.repository import InvoiceRepository
+from api.balances.service import BalanceService
 
 
 @inject
 @dataclass
 class InvoiceService:
     invoice_repository: InvoiceRepository
+    balance_service: BalanceService
 
     def create_invoice(self, invoice_create: InvoiceCreate) -> Invoice:
         try:
@@ -37,6 +39,16 @@ class InvoiceService:
 
             try:
                 invoice = self.invoice_repository.create_invoice_with_shares(invoice_create)
+                
+                # Update balances based on invoice shares
+                # Creator's balance increases by amounts owed to them (as creditor)
+                # Debtors' balances decrease by amounts they owe
+                for share in invoice.invoice_shares:
+                    # Add to creditor's balance (they are owed money)
+                    self.balance_service.add_to_balance(share.creditor_id, share.amount)
+                    # Subtract from debtor's balance (they owe money)
+                    self.balance_service.subtract_from_balance(share.debtor_id, share.amount)
+                
             except Exception as e:
                 print(f"Unable to create invoice: {e}")
                 raise InternalServerError("Unable to create invoice")

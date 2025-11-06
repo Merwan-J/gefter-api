@@ -37,7 +37,7 @@ def get_current_user_mock(
     user_service: UserService = Injected(UserService),
 ) -> User:
     # Test user details
-    test_user_1_telegram_id = 123456789
+    test_user_1_telegram_id = 3241412
     test_user_2_telegram_id = 987654321
     
     # Access repository through service

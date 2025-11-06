@@ -6,6 +6,7 @@ from sqlmodel import SQLModel
 import api.user.models  # noqa: F401
 import api.invoices.models  # noqa: F401
 import api.invoice_shares.models  # noqa: F401
+import api.balances.models  # noqa: F401
 from config import get_config
 
 config = context.config
