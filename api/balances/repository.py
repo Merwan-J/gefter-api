@@ -134,3 +134,50 @@ class BalanceRepository:
             session.refresh(balance_obj)
             return balance_obj
 
+    def batch_update_balances(
+        self, 
+        owed_to_user_updates: dict[UUID, Decimal],
+        user_owes_updates: dict[UUID, Decimal]
+    ) -> None:
+        """Batch update multiple balances in a single transaction.
+        
+        Args:
+            owed_to_user_updates: Dict mapping user_id -> amount to add to owed_to_user
+            user_owes_updates: Dict mapping user_id -> amount to add to user_owes
+        """
+        with Session(self.engine) as session:
+            # Get all unique user IDs that need updates
+            all_user_ids = set(owed_to_user_updates.keys()) | set(user_owes_updates.keys())
+            
+            if not all_user_ids:
+                return
+            
+            # Fetch all balances in one query
+            query = select(Balance).where(Balance.user_id.in_(all_user_ids))
+            existing_balances = {balance.user_id: balance for balance in session.exec(query)}
+            
+            # Update or create balances
+            for user_id in all_user_ids:
+                balance = existing_balances.get(user_id)
+
+                if balance is None:
+                    balance = Balance(
+                        user_id=user_id,
+                        owed_to_user=Decimal("0.00"),
+                        user_owes=Decimal("0.00")
+                    )
+                    session.add(balance)
+                
+                # Update owed_to_user
+                if user_id in owed_to_user_updates:
+                    balance.owed_to_user += owed_to_user_updates[user_id]
+                
+                # Update user_owes
+                if user_id in user_owes_updates:
+                    balance.user_owes += user_owes_updates[user_id]
+                
+                session.add(balance)
+            
+            # Single commit for all updates
+            session.commit()
+

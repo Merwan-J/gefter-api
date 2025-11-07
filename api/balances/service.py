@@ -58,3 +58,18 @@ class BalanceService:
         except Exception as e:
             raise InternalServerError(f"Unable to update user_owes: {str(e)}")
 
+    def batch_update_balances(
+        self,
+        owed_to_user_updates: dict[UUID, Decimal],
+        user_owes_updates: dict[UUID, Decimal]
+    ) -> None:
+        """Batch update multiple balances in a single transaction."""
+        try:
+            self.balance_repository.batch_update_balances(
+                owed_to_user_updates, user_owes_updates
+            )
+        except BaseAPIException:
+            raise
+        except Exception as e:
+            raise InternalServerError(f"Unable to batch update balances: {str(e)}")
+

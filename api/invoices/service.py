@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from typing import List
 from uuid import UUID
+from decimal import Decimal
 from injector import inject
+import time
 
 from api.core.exceptions import (
     BaseAPIException,
@@ -20,7 +22,6 @@ from api.invoice_shares.repository import InvoiceShareRepository
 from api.invoice_shares.models import InvoiceShareStatus
 from api.invoices.models import InvoiceStatus
 from api.balances.service import BalanceService
-
 
 @inject
 @dataclass
@@ -44,11 +45,31 @@ class InvoiceService:
             try:
                 invoice = self.invoice_repository.create_invoice_with_shares(invoice_create)
                 
-                # Update balances based on invoice shares
-                # For each share: increase creator's owed_to_user, and increase debtor's user_owes
+                # Batch update balances based on invoice shares
+                # Collect all balance updates first
+                owed_to_user_updates: dict[UUID, Decimal] = {}
+                user_owes_updates: dict[UUID, Decimal] = {}
+                
                 for share in invoice.invoice_shares:
-                    self.balance_service.add_to_owed_to_user(share.creditor_id, share.amount)
-                    self.balance_service.add_to_user_owes(share.debtor_id, share.amount)
+                    # Aggregate creditor updates (increase owed_to_user)
+                    if share.creditor_id in owed_to_user_updates:
+                        owed_to_user_updates[share.creditor_id] += share.amount
+                    else:
+                        owed_to_user_updates[share.creditor_id] = share.amount
+                    
+                    # Aggregate debtor updates (increase user_owes)
+                    if share.debtor_id in user_owes_updates:
+                        user_owes_updates[share.debtor_id] += share.amount
+                    else:
+                        user_owes_updates[share.debtor_id] = share.amount
+                
+                # Apply all balance updates in a single transaction
+                start_time = time.perf_counter()
+                self.balance_service.batch_update_balances(
+                    owed_to_user_updates, user_owes_updates
+                )
+                elapsed_time = time.perf_counter() - start_time
+                print(f"Time taken to update balances: {elapsed_time:.3f} seconds")
                 
             except Exception as e:
                 print(f"Unable to create invoice: {e}")
