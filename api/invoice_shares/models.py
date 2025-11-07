@@ -16,9 +16,13 @@ if TYPE_CHECKING:
 
 class InvoiceShareStatus(str, Enum):
     PENDING = "PENDING"
-    WATING_CONFIRMATION = "WATING_CONFIRMATION"
-    CONFIRMED = "CONFIRMED"
     REJECTED = "REJECTED"
+    PAID = "PAID"
+
+
+class InvoiceShareFilter(str, Enum):
+    I_OWE = "i_owe"
+    OWED_TO_ME = "owed_to_me"
 
 
 class InvoiceShare(DBBaseModel, table=True):
@@ -74,3 +78,8 @@ class InvoiceShareWithDebtor(InvoiceShareRead):
 
 class InvoiceShareDetailed(InvoiceShareRead):
     invoice: "InvoiceRead"
+
+
+class PayInvoiceShareRequest(BaseModel):
+    invoice_id: UUID
+    invoice_share_id: UUID

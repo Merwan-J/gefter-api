@@ -8,7 +8,7 @@ from sqlmodel import select, Session
 from sqlalchemy.engine import Engine
 
 from api.core.repository import DatabaseEngineProvider
-from api.invoices.models import Invoice, InvoiceCreate, InvoiceShare
+from api.invoices.models import Invoice, InvoiceCreate, InvoiceShare, InvoiceStatus
 from api.core.exceptions import NotFoundError
 
 
@@ -81,3 +81,14 @@ class InvoiceRepository:
                 .where(Invoice.creator_id == user_id)
             )
             return session.exec(query).all()
+
+    def update_invoice_status(self, invoice_id: UUID, new_status: InvoiceStatus) -> Invoice:
+        with Session(self.engine) as session:
+            invoice = session.get(Invoice, invoice_id)
+            if invoice is None:
+                raise NotFoundError("Invoice not found")
+            invoice.status = new_status
+            session.add(invoice)
+            session.commit()
+            session.refresh(invoice)
+            return invoice

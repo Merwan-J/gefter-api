@@ -16,6 +16,9 @@ from api.invoices.models import (
     InvoiceRead,
 )
 from api.invoices.repository import InvoiceRepository
+from api.invoice_shares.repository import InvoiceShareRepository
+from api.invoice_shares.models import InvoiceShareStatus
+from api.invoices.models import InvoiceStatus
 from api.balances.service import BalanceService
 
 
@@ -23,6 +26,7 @@ from api.balances.service import BalanceService
 @dataclass
 class InvoiceService:
     invoice_repository: InvoiceRepository
+    invoice_share_repository: InvoiceShareRepository
     balance_service: BalanceService
 
     def create_invoice(self, invoice_create: InvoiceCreate) -> Invoice:
@@ -88,3 +92,33 @@ class InvoiceService:
         except Exception as e:
             print(f"Unable to fetch invoices: {e}")
             raise InternalServerError("Unable to fetch invoices")
+
+    def pay_invoice_share(self, invoice_id: UUID, invoice_share_id: UUID) -> InvoiceDetailRead:
+        try:
+            self.invoice_share_repository.set_status_paid(invoice_share_id)
+
+            remaining = self.invoice_share_repository.count_unpaid_shares(invoice_id)
+
+            if remaining == 0:
+                self.invoice_repository.update_invoice_status(invoice_id, InvoiceStatus.PAID)
+            else:
+                self.invoice_repository.update_invoice_status(invoice_id, InvoiceStatus.PARTIALLY_PAID)
+
+            invoice = self.invoice_repository.get_invoice_detail(invoice_id)
+
+            return InvoiceDetailRead.model_validate(invoice)
+
+        except BaseAPIException:
+            raise
+        except Exception as e:
+            print(f"Unable to pay invoice share: {e}")
+            raise InternalServerError("Unable to pay invoice share")
+
+    def get_invoice_detail(self, invoice_id: UUID) -> InvoiceDetailRead:
+        try:
+            invoice = self.invoice_repository.get_invoice_detail(invoice_id)
+            return InvoiceDetailRead.model_validate(invoice)
+
+        except Exception as e:
+            print(f"Unable to get invoice by id: {e}")
+            raise InternalServerError("Unable to get invoice by id")

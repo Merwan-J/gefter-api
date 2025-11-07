@@ -52,3 +52,11 @@ class InvoiceShareService:
             )
         except BaseAPIException:
             raise
+
+    def get_invoice_shares_by_user_id(self, user_id: UUID) -> List[InvoiceShare]:
+        try:
+            return self.invoice_share_repository.get_invoice_shares_by_user_id(user_id)
+        except BaseAPIException:
+            raise
+        except Exception:
+            raise InternalServerError("Unable to fetch invoice shares")
