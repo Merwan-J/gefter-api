@@ -40,3 +40,21 @@ class BalanceService:
         except Exception as e:
             raise InternalServerError(f"Unable to update user_owes: {str(e)}")
 
+    def subtract_from_owed_to_user(self, user_id: UUID, amount: Decimal) -> Balance:
+        """Decrease amount others owe to this user."""
+        try:
+            return self.balance_repository.subtract_from_owed_to_user(user_id, amount)
+        except BaseAPIException:
+            raise
+        except Exception as e:
+            raise InternalServerError(f"Unable to update owed_to_user: {str(e)}")
+
+    def subtract_from_user_owes(self, user_id: UUID, amount: Decimal) -> Balance:
+        """Decrease amount this user owes to others."""
+        try:
+            return self.balance_repository.subtract_from_user_owes(user_id, amount)
+        except BaseAPIException:
+            raise
+        except Exception as e:
+            raise InternalServerError(f"Unable to update user_owes: {str(e)}")
+

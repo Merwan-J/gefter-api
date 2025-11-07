@@ -80,6 +80,42 @@ class BalanceRepository:
             session.refresh(balance)
             return balance
 
+    def subtract_from_owed_to_user(self, user_id: UUID, amount: Decimal) -> Balance:
+        """Decrease amount others owe to this user."""
+        with Session(self.engine) as session:
+            query = select(Balance).where(Balance.user_id == user_id)
+            balance = session.exec(query).first()
+            if balance is None:
+                balance = Balance(user_id=user_id, owed_to_user=Decimal("0.00"), user_owes=Decimal("0.00"))
+                session.add(balance)
+                session.flush()
+            balance.owed_to_user -= amount
+            # Ensure balance doesn't go negative (optional safety check)
+            if balance.owed_to_user < Decimal("0.00"):
+                balance.owed_to_user = Decimal("0.00")
+            session.add(balance)
+            session.commit()
+            session.refresh(balance)
+            return balance
+
+    def subtract_from_user_owes(self, user_id: UUID, amount: Decimal) -> Balance:
+        """Decrease amount this user owes to others."""
+        with Session(self.engine) as session:
+            query = select(Balance).where(Balance.user_id == user_id)
+            balance = session.exec(query).first()
+            if balance is None:
+                balance = Balance(user_id=user_id, owed_to_user=Decimal("0.00"), user_owes=Decimal("0.00"))
+                session.add(balance)
+                session.flush()
+            balance.user_owes -= amount
+            # Ensure balance doesn't go negative (optional safety check)
+            if balance.user_owes < Decimal("0.00"):
+                balance.user_owes = Decimal("0.00")
+            session.add(balance)
+            session.commit()
+            session.refresh(balance)
+            return balance
+
     def set_balances(
         self, user_id: UUID, owed_to_user: Decimal, user_owes: Decimal
     ) -> Balance:

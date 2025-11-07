@@ -95,7 +95,15 @@ class InvoiceService:
 
     def pay_invoice_share(self, invoice_id: UUID, invoice_share_id: UUID) -> InvoiceDetailRead:
         try:
+            # Get the invoice share to access debtor_id, creditor_id, and amount
+            share = self.invoice_share_repository.get_invoice_share_by_id(invoice_share_id)
+            
+            # Update the share status to PAID
             self.invoice_share_repository.set_status_paid(invoice_share_id)
+
+            # Update balances: subtract from debtor's user_owes and creditor's owed_to_user
+            self.balance_service.subtract_from_user_owes(share.debtor_id, share.amount)
+            self.balance_service.subtract_from_owed_to_user(share.creditor_id, share.amount)
 
             remaining = self.invoice_share_repository.count_unpaid_shares(invoice_id)
 
