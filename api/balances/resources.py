@@ -4,6 +4,8 @@ from api.core.dependencies import get_current_user
 from api.balances.models import BalanceRead
 from api.balances.service import BalanceService
 from api.user.models import User
+from uuid import UUID
+
 
 
 balance_router = APIRouter(prefix="/balances", tags=["balances"])
@@ -25,8 +27,7 @@ async def get_user_balance(
     balance_service: BalanceService = Injected(BalanceService),
     _: User = Depends(get_current_user),
 ):
-    """Get balance for a specific user (by UUID)"""
-    from uuid import UUID
+    """Get balance for a specific user (by id)"""
     balance = balance_service.get_balance(UUID(user_id))
     return BalanceRead.model_validate(balance)
 

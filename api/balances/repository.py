@@ -2,12 +2,10 @@ from dataclasses import dataclass
 from uuid import UUID
 from decimal import Decimal
 from injector import inject
-from sqlalchemy.exc import NoResultFound
 from sqlmodel import Session, select
 from sqlalchemy.engine import Engine
 
 from api.core.repository import DatabaseEngineProvider
-from api.core.exceptions import NotFoundError
 from api.balances.models import Balance
 
 

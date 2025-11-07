@@ -27,8 +27,6 @@ async def get_invoice_shares(
     else:
         invoice_shares = invoice_share_service.get_invoice_shares_by_user_id(user.id)
 
-    print(f">>> invoice shares fidewalks {invoice_shares}")
-
     return [InvoiceShareRead.model_validate(share) for share in invoice_shares]
 
 

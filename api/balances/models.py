@@ -1,14 +1,12 @@
 import datetime
 from decimal import Decimal
 from uuid import UUID
-from typing import Optional
 
 from pydantic import BaseModel
 from sqlmodel import Field, Numeric
 from api.core.models import BaseModel as DBBaseModel
-from api.user.models import UserRead
 
-
+# DB Model
 class Balance(DBBaseModel, table=True):
     __tablename__ = "balances"
 
@@ -28,7 +26,7 @@ class BalanceBase(BaseModel):
     owed_to_user: Decimal
     user_owes: Decimal
 
-
+# DTOs below
 class BalanceRead(BalanceBase):
     model_config = {"from_attributes": True}
     
