@@ -22,14 +22,17 @@ class UserService:
             user_exists = self.user_repository.user_by_telegram_id_exists(
                 user_create.telegram_user_id
             )
+
             if user_exists:
                 raise HTTPException(status_code=400, detail="User already exists")
 
             user = self.user_repository.save(User(**user_create.model_dump()))
+
             return user
 
         except HTTPException:
             raise
+
         except IntegrityError as e:
             logger.error(f"Database integrity error while creating user: {str(e)}")
             raise HTTPException(

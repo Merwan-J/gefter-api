@@ -16,19 +16,24 @@ if TYPE_CHECKING:
 
 class InvoiceShareStatus(str, Enum):
     PENDING = "PENDING"
-    WATING_CONFIRMATION = "WATING_CONFIRMATION"
-    CONFIRMED = "CONFIRMED"
     REJECTED = "REJECTED"
+    # we probably need accepted status for invoice shares that are approved but not paid
+    PAID = "PAID"
+
+
+class InvoiceShareFilter(str, Enum):
+    I_OWE = "i_owe"
+    OWED_TO_ME = "owed_to_me"
 
 
 class InvoiceShare(DBBaseModel, table=True):
     __tablename__ = "invoice_shares"
 
-    invoice_id: UUID = Field(foreign_key="invoices.id", index=True)
-    debtor_id: UUID = Field(foreign_key="users.id", index=True)
-    creditor_id: UUID = Field(foreign_key="users.id", index=True)
+    invoice_id: UUID = Field(foreign_key="invoices.id")
+    debtor_id: UUID = Field(foreign_key="users.id")
+    creditor_id: UUID = Field(foreign_key="users.id")
     amount: Decimal = Field(sa_type=Numeric(precision=10, scale=2), gt=0)
-    status: InvoiceShareStatus = Field(default=InvoiceShareStatus.PENDING, index=True)
+    status: InvoiceShareStatus = Field(default=InvoiceShareStatus.PENDING)
 
     invoice: "Invoice" = Relationship(back_populates="invoice_shares")
     debtor: "User" = Relationship(
@@ -74,3 +79,8 @@ class InvoiceShareWithDebtor(InvoiceShareRead):
 
 class InvoiceShareDetailed(InvoiceShareRead):
     invoice: "InvoiceRead"
+
+
+class PayInvoiceShareRequest(BaseModel):
+    invoice_id: UUID
+    invoice_share_id: UUID
