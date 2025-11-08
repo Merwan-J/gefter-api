@@ -90,7 +90,7 @@ class BalanceRepository:
             balance.owed_to_user -= amount
             # Ensure balance doesn't go negative (optional safety check)
             if balance.owed_to_user < Decimal("0.00"):
-                balance.owed_to_user = Decimal("0.00")
+                raise ValueError("Owed to user cannot be negative")
             session.add(balance)
             session.commit()
             session.refresh(balance)
@@ -108,7 +108,7 @@ class BalanceRepository:
             balance.user_owes -= amount
             # Ensure balance doesn't go negative (optional safety check)
             if balance.user_owes < Decimal("0.00"):
-                balance.user_owes = Decimal("0.00")
+                raise ValueError("User owes cannot be negative")
             session.add(balance)
             session.commit()
             session.refresh(balance)
